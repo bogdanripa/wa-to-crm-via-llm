@@ -1,32 +1,21 @@
-import express from "express";
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import {router as waRouter} from './whatsapp.mjs';
+import {init as initLLM} from './llm.mjs';
+
+initLLM();
 
 const app = express();
+app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World from Express serverless!");
-});
+app.use('/whatsapp', waRouter);
 
-app.get("/users", (req, res) => {
-  res.json([{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }]);
-});
-
-// route example with streaming
-
-app.get("/stream", (req, res) => {
-  // write a long string to the response
-  const interval = setInterval(() => {
-    res.write("Hello, World! ");
-  }, 1000);
-
-  // end the response after 5 seconds
-  setTimeout(() => {
-    clearInterval(interval);
-    res.end();
-  }, 5000);
+app.get('/', (req, res) => {
+    res.send('Hello World!');
 });
 
 app.listen(8080, () => {
-  console.log(
-    "Server is running on port 8080. Check the app on http://localhost:8080"
-  );
+    console.log('Server is running');
 });
