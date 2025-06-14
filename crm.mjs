@@ -2,10 +2,10 @@ import axios from 'axios';
 
 async function getUserToken(phone) {
     try {
-        const response = await axios.post(`https://9c519d15-4a1d-4e86-9b50-625db25e5742.eu-central-1.cloud.genez.io/auth/email-code/get-token`,
+        const response = await axios.post(`${process.env.CRM_URL}/auth/email-code/get-token`,
             {
                 phone,
-                "secret": "iweuygfiueyfgweiuyfgwyiuefgwiuegfiw"
+                "secret": process.env.EMAIL_CODE_AUTH_SECRET
             }
         );
         if (response.status === 200 && response.data && response.data.token) {
@@ -22,9 +22,9 @@ async function getUserToken(phone) {
 
 async function initAuth(email) {
     try {
-        const response = await axios.post(`https://9c519d15-4a1d-4e86-9b50-625db25e5742.eu-central-1.cloud.genez.io/auth/email-code/init`, {
+        const response = await axios.post(`${process.env.CRM_URL}/auth/email-code/init`, {
             email,
-            "secret": "iweuygfiueyfgweiuyfgwyiuefgwiuegfiw"
+            "secret": process.env.EMAIL_CODE_AUTH_SECRET
         });
         return response.data? response.data.message : null;
     } catch (error) {
@@ -35,11 +35,11 @@ async function initAuth(email) {
 
 async function authenticate(email, phone, code) {
     try {
-        const response = await axios.post(`https://9c519d15-4a1d-4e86-9b50-625db25e5742.eu-central-1.cloud.genez.io/auth/email-code/authenticate`, {
+        const response = await axios.post(`${process.env.CRM_URL}/auth/email-code/authenticate`, {
             email,
             phone,
             code,
-            "secret": "iweuygfiueyfgweiuyfgwyiuefgwiuegfiw"
+            "secret": process.env.EMAIL_CODE_AUTH_SECRET
         });
         return response.data ? response.data.token : null;
     } catch (error) {
