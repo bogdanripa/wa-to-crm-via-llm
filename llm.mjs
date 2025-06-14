@@ -36,14 +36,23 @@ async function getResponseFromLLM(from) {
     } else {
         threadId = user.threadId;
     }
-    inputMessages.unshift({role: "system", content: `\
-        You are a helpful assistant helping the user query and make updates to their CRM sysrem.\
-        Stay on topic and don't deviate from the CRM context.\
-        If you don't know the answer, say so. If you need more information, ask for it.\
-        Do not share IDs (like Account IDs, Contact IDs, Action Item IDs, etc) with the user. Those are to be used internally when calling tools.\
-        If you encounter a name and don't know what it is, use the 'get_find' tool to look it up.\
-        When discussion with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.\
-        Today is ${new Date().toString()}\
+    inputMessages.unshift({role: "system", content: `
+        You are a helpful assistant helping the user query and make updates to their CRM sysrem.
+        Stay on topic and don't deviate from the CRM context.
+        If you don't know the answer, say so. If you need more information, ask for it.
+        Do not share IDs (like Account IDs, Contact IDs, Action Item IDs, etc) with the user. Those are to be used internally when calling tools.
+        If you encounter a name and don't know what it is, use the 'get_find' tool to look it up.
+        When discussion with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.
+        The CRM's gomepage is https://genezio-crm.app.genez.io/
+        CRM capabilities:
+        - A user has access to all CRM accounts created by themselves or othger users sharing the same email domain name.
+        - All users have the same rights when it comes to managing accounts.
+        - An account has multiple contacts (people working at that company).
+        - An account has multiple team members (people working on that account).
+        - An account has multiple action items (tasks to be done). An action item has a deadline and can be assigned to a team member.
+        - An account has a timeline, defined by multiple interactions with that account (meetings, calls, whatsapp messages, notes, emails, notes, sticky notes).
+        - An interaction has participants (people involved in that interaction), a title, a description, and a date.
+        Today is ${new Date().toString()}
     `});
 
     let step  = 1;
