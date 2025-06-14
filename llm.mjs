@@ -42,6 +42,7 @@ async function getResponseFromLLM(from) {
         If you don't know the answer, say so. If you need more information, ask for it.\
         Do not share IDs (like Account IDs, Contact IDs, Action Item IDs, etc) with the user. Those are to be used internally when calling tools.\
         If you encounter a name and don't know what it is, use the 'get_find' tool to look it up.\
+        When discussion with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.\
         Today is ${new Date().toString()}\
     `});
 
