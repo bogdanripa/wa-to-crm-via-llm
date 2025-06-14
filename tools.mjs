@@ -121,7 +121,7 @@ async function callApi(tool_name, input) {
     throw new Error(`Tool ${tool_name} not found`);
   }
   let { path, method } = tool;
-  const baseUrl = swagger.servers?.[0]?.url || "${process.env.CRM_URL}";
+  const baseUrl = swagger.servers?.[0]?.url || process.env.CRM_URL;
   const queryParams = {};
   for (const key in input) {
     if (path.includes(`{${key}}`)) {
