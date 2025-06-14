@@ -45,7 +45,7 @@ async function getResponseFromLLM(from) {
         When discussion with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.
         The CRM's gomepage is https://genezio-crm.app.genez.io/
         CRM capabilities:
-        - A user has access to all CRM accounts created by themselves or othger users sharing the same email domain name.
+        - A user has access to all CRM accounts created by themselves or other users sharing the same email domain name.
         - All users have the same rights when it comes to managing accounts.
         - An account has multiple contacts (people working at that company).
         - An account has multiple team members (people working on that account).
