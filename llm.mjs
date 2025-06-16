@@ -139,7 +139,7 @@ async function extractCodeAndEmail(from) {
         if (!email) {
             const emailMatch = msg.message.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
             if (emailMatch) {
-                email = emailMatch[1];
+                email = emailMatch[1].toLowerCase();
             }
         }
         if (code && email) {
