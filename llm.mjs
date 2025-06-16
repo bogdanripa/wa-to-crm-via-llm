@@ -206,4 +206,4 @@ function init() {
     setMessageCallback(gotMessage);
 }
 
-export {init};
+export {init, sendMessage};

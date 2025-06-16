@@ -44,26 +44,6 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-router.post('/sendMessage', async (req, res) => {
-  const bearer = req.headers.authorization;
-  if (!bearer || bearer !== `Bearer ${process.env.EMAIL_CODE_AUTH_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  
-  const { phone, message } = req.body;
-  if (!phone || !message) {
-    return res.status(400).json({ error: 'Missing "phone" or "text" in request body' });
-  }
-
-  try {
-    await sendMessage(phone, message);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Error sending message:', error.message);
-    res.status(500).json({ error: 'Failed to send message' });
-  }
-});
-
 async function sendMessage(to, text) {
   const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
   const payload = {
