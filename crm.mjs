@@ -24,12 +24,14 @@ async function initAuth(email) {
     try {
         const response = await axios.post(`${process.env.CRM_URL}/auth/email-code/init`, {
             email,
-            "secret": process.env.EMAIL_CODE_AUTH_SECRET
+            secret: process.env.EMAIL_CODE_AUTH_SECRET
         });
-        return response.data? response.data.message : null;
+        return response.data?.message ?? null;
     } catch (error) {
-        console.error(`Error initializing auth for ${email}:`, error.message);
-        return null;
+        // Axios includes the response body in error.response
+        const message = error.response?.data?.message ?? error.message;
+        console.error(`Error initializing auth for ${email}:`, message);
+        return message;
     }
 }
 
