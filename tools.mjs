@@ -154,12 +154,11 @@ async function callApi(tool_name, input) {
     body
   });
 
-  if (!response.ok) {
-    return `Error: ${response.status} ${response.statusText}`;
-  }
-
   const data = await response.text();
-  console.log(`Response: ${data.substring(0, 50)}...`); // Log first 100 chars for brevity
+  console.log(`Response: ${response.status} - ${data.substring(0, 50)}...`); // Log first 100 chars for brevity
+  if (!response.ok) {
+    return `Error: ${response.statusText} - ${data}`;
+  }
 
   return data;
 }
