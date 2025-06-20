@@ -29,7 +29,7 @@ export async function gotMessage(from, text) {
         await waUser.save();
     }
     if (waUser.token)
-        setCRMToken(token);
+        setCRMToken(waUser.token);
     
     await saveMessage(from, "assistant", text);
     const response = await getResponseFromLLM(waUser);
