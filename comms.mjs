@@ -8,7 +8,7 @@ export async function rewriteThenSendMessage(to, text) {
         console.error('Invalid parameters for sending message:', { to, text });
         return;
     }
-    const rewrittenMessage = rewriteMessage(to, text);
+    const rewrittenMessage = await rewriteMessage(to, text);
     await saveMessage(to, rewrittenMessage);
 }
 
