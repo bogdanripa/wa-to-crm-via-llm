@@ -209,13 +209,13 @@ const authTools = [
       `,
       parameters: {
         type: "object",
-        required: ["email", "authCode"],
+        required: ["email", "code"],
         properties: {
           "email": {
             type: "string",
             description: "The user's email address, as provided by the user.",
           },
-          "authCode": {
+          "code": {
             type: "string",
             description: "The auth code, as provided back by the user."
           }
