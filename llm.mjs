@@ -6,8 +6,6 @@ import OpenAI from "openai";
 import {tools, authTools, callApi} from './tools.mjs';
 import {WAMessage} from './db.mjs';
 
-console.log(JSON.stringify(tools, null, 2));
-
 const openai = new OpenAI();
 
 export async function getResponseFromLLM(user) {
@@ -90,8 +88,8 @@ export async function getResponseFromLLM(user) {
                     try {
                         const resultObj = JSON.parse(result);
                         if (resultObj.token) {
-                            ret.token = result.token;
-                            ret.name = result.name;
+                            ret.token = resultObj.token;
+                            ret.name = resultObj.name;
                             ret.email = args.email;
                             result = "The user is now authenticated."
                         }
@@ -128,7 +126,7 @@ export async function getResponseFromLLM(user) {
         } else {
             // Final assistant answer
             ret.message = message.content;
-            console.log("✅ Assistant:", ret);
+            console.log("✅ Assistant:", ret.message);
             return ret;
         }
     }
