@@ -1,7 +1,16 @@
 import {sendMessage as sendMessageViaWA} from './whatsapp.mjs';
 import {setCRMToken} from './tools.mjs';
-import {getResponseFromLLM} from './llm.mjs';
+import {getResponseFromLLM, rewriteMessage} from './llm.mjs';
 import {WAMessage, WAUser} from './db.mjs';
+
+export async function rewriteThenSendMessage(to, text) {
+    if (!to || !text) {
+        console.error('Invalid parameters for sending message:', { to, text });
+        return;
+    }
+    const rewrittenMessage = rewriteMessage(to, text);
+    await saveMessage(to, rewrittenMessage);
+}
 
 export async function sendMessage(to, text) {
     // save the message to the database

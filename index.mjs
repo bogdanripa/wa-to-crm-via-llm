@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import {router as waRouter, setMessageCallback} from './whatsapp.mjs';
-import {sendMessage, gotMessage} from './comms.mjs';
+import {rewriteThenSendMessage, gotMessage} from './comms.mjs';
 
 setMessageCallback(gotMessage);
 
@@ -24,11 +24,11 @@ app.post('/sendMessage', async (req, res) => {
   
   const { phone, message } = req.body;
   if (!phone || !message) {
-    return res.status(400).json({ error: 'Missing "phone" or "text" in request body' });
+    return res.status(400).json({ error: 'Missing "phone" or "message" in request body' });
   }
 
   try {
-    await sendMessage(phone, message);
+    await rewriteThenSendMessage(phone, message);
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error sending message:', error.message);

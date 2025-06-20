@@ -8,6 +8,50 @@ import {WAMessage} from './db.mjs';
 
 const openai = new OpenAI();
 
+export async function rewriteMessage(phone, message) {
+    if (!message || typeof message !== 'string') {
+        console.error('Invalid message for rewriting:', message);
+        return '';
+    }
+    // get conversation history for the phone number
+    const messages = await WAMessage.find({
+        $or: [
+            { from: phone },
+            { to: phone }
+        ]
+    })
+    .sort({ createdAt: -1 })
+    .limit(10);
+
+    let conversationHistory = "";
+    messages.reverse().forEach(msg => {
+        if (msg.from.match(/\d+/i)) {
+            conversationHistory += `- User: ${msg.message}\n`;
+        } else {
+            conversationHistory += `- Assistant: ${msg.message}\n`;
+        }
+    });
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: `
+You are a helpful assistant that rewrites a message to be more concise and clear.
+The result should be a text that flows, not a list of bullet points.
+I will provide you the conversation history so that you have some context:
+${conversationHistory}
+                ` },
+                { role: "user", content: message }
+            ],
+        });
+        return response.choices[0].message.content;
+    } catch (error) {
+        console.error('Error rewriting message:', error.message);
+        return message; // Fallback to original message in case of error
+    }
+}
+
 export async function getResponseFromLLM(user) {
     const from = user.phone;
     let inputMessages = [];
