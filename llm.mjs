@@ -11,6 +11,7 @@ console.log(JSON.stringify(tools, null, 2));
 const openai = new OpenAI();
 
 export async function getResponseFromLLM(user) {
+    const from = user.phone;
     let inputMessages = [];
     let messages = await WAMessage.find({
         $or: [
