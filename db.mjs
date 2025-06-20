@@ -15,10 +15,10 @@ const waMessageSchema = new mongoose.Schema({
 const WAMessage = mongoose.model("WAMessage", waMessageSchema);
 
 const waUsersSchema = new mongoose.Schema({
+    name:  String,
     phone: String,
     email: String,
     token: String,
-    threadId: String,
 }, {
     timestamps: true
 });

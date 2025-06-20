@@ -3,6 +3,7 @@ import fs from "fs";
 const swaggerPath = "./swagger.json";
 const rawSwagger = fs.readFileSync(swaggerPath, "utf8");
 const swagger = JSON.parse(rawSwagger);
+
 let crmToken = null;
 
 const tools = [];
@@ -116,11 +117,12 @@ for (const path in swagger.paths) {
 }
 
 async function callApi(tool_name, input) {
-  const tool = tools.find(t => t.function.name === tool_name);
+  let tool = tools.find(t => t.function.name === tool_name);
   if (!tool) {
-    throw new Error(`Tool ${tool_name} not found`);
+    tool = authTools.find(t => t.function.name === tool_name);
+    if (!tool) throw new Error(`Tool ${tool_name} not found`);
   }
-  let { path, method } = tool;
+  let { path, method, addSecret } = tool;
   const baseUrl = swagger.servers?.[0]?.url || process.env.CRM_URL;
   const queryParams = {};
   for (const key in input) {
@@ -138,6 +140,9 @@ async function callApi(tool_name, input) {
   let fullUrl = `${baseUrl}${path}`;
   if (queryString)
     fullUrl += `?${queryString}`;
+
+  if (addSecret) input.secret = process.env.EMAIL_CODE_AUTH_SECRET;
+
   const body = Object.keys(input).length > 0 ? JSON.stringify(input, null, 2) : undefined;
 
   console.log(`${method} ${fullUrl}`);
@@ -167,4 +172,57 @@ function setCRMToken(token) {
   crmToken = token;
 }
 
-export {tools, setCRMToken, callApi};
+const authTools = [
+  {
+    type: "function",
+    function: {
+      name: "initAuth",
+      description: `
+        Initiates the authentication for a given user.
+        This function will find the user by email and, of found,
+        will send a auth code to the users' email that they have to enter later on.
+      `,
+      parameters: {
+        required: ["email"],
+        properties: {
+          "email": {
+            type: "string",
+            description: "The user's email address, as provided by the user.",
+          }
+        },
+        "type": "object"
+      }
+    },
+    "path": "/auth/email-code/init",
+    "method": "POST",
+    "addSecret": true
+  },
+  {
+    type: "function",
+    function: {
+      name: "authenticate",
+      description: `
+        Authenticates a given user.
+        Receives the user's email and a auth code and returns a auth token.
+      `,
+      parameters: {
+        required: ["email", "authCode"],
+        properties: {
+          "email": {
+            type: "string",
+            description: "The user's email address, as provided by the user.",
+          },
+          "authCode": {
+            type: "string",
+            description: "The auth code, as provided back by the user."
+          }
+        }
+      }
+    },
+    "path": "/auth/email-code/authenticate",
+    "method": "POST",
+    "addSecret": true
+  }
+]
+
+export {tools, authTools, setCRMToken, callApi};

@@ -2,10 +2,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
-import {router as waRouter} from './whatsapp.mjs';
-import {init as initLLM, sendMessage} from './llm.mjs';
+import {router as waRouter, setMessageCallback} from './whatsapp.mjs';
+import {sendMessage, gotMessage} from './comms.mjs';
 
-initLLM();
+setMessageCallback(gotMessage);
 
 const app = express();
 app.use(express.json());
