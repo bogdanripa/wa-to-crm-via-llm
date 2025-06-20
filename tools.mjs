@@ -183,6 +183,7 @@ const authTools = [
         will send a auth code to the users' email that they have to enter later on.
       `,
       parameters: {
+        type: "object",
         required: ["email"],
         properties: {
           "email": {
@@ -206,6 +207,7 @@ const authTools = [
         Receives the user's email and a auth code and returns a auth token.
       `,
       parameters: {
+        type: "object",
         required: ["email", "authCode"],
         properties: {
           "email": {
