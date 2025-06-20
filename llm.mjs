@@ -127,8 +127,8 @@ export async function getResponseFromLLM(user) {
             }
         } else {
             // Final assistant answer
-            console.log("✅ Assistant:", message.content);
             ret.message = message.content;
+            console.log("✅ Assistant:", ret);
             return ret;
         }
     }

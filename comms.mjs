@@ -34,6 +34,7 @@ export async function gotMessage(from, text) {
     await saveMessage(from, "assistant", text);
     const response = await getResponseFromLLM(waUser);
     if (response.token) {
+        console.log("Setting CRM token for user", from);
         waUser.token = response.token;
         waUser.email = response.email;
         waUser.name  = response.name;
