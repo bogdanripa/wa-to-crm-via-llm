@@ -130,7 +130,7 @@ async function callApi(tool_name, input) {
       path = path.replace(`{${key}}`, encodeURIComponent(input[key]));
       delete input[key]; // Remove the key from input as it's already used in the path
     }
-    if (tool.function.parameters.properties[key].in === 'query') {
+    if (tool.function.parameters.properties[key] && tool.function.parameters.properties[key].in === 'query') {
       queryParams[key] = input[key];
       delete input[key]; // Remove the key from input as it's already used in the query
     }
@@ -141,11 +141,12 @@ async function callApi(tool_name, input) {
   if (queryString)
     fullUrl += `?${queryString}`;
 
+  console.log(`${method} ${fullUrl}`);
+
   if (addSecret) input.secret = process.env.EMAIL_CODE_AUTH_SECRET;
 
   const body = Object.keys(input).length > 0 ? JSON.stringify(input, null, 2) : undefined;
 
-  console.log(`${method} ${fullUrl}`);
   if (body) {
     console.log(`Body: ${body}`); // Log first 100 chars for brevity
   }
