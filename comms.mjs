@@ -26,7 +26,7 @@ export async function gotMessage(from, text) {
     let waUser = await WAUser.findOne({phone: from});    
     if (!waUser) {
         waUser = new WAUser({phone: from});
-        await user.save();
+        await waUser.save();
     }
     if (waUser.token)
         setCRMToken(token);
