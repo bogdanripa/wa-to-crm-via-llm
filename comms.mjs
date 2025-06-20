@@ -9,7 +9,7 @@ export async function rewriteThenSendMessage(to, text) {
         return;
     }
     const rewrittenMessage = await rewriteMessage(to, text);
-    await saveMessage(to, rewrittenMessage);
+    await sendMessage(to, rewrittenMessage);
 }
 
 export async function sendMessage(to, text) {

@@ -32,8 +32,6 @@ export async function rewriteMessage(phone, message) {
         }
     });
 
-    console.log("Conversation history for rewriting:", conversationHistory);
-
     try {
         const response = await openai.chat.completions.create({
             model: "gpt-4o",
