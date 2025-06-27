@@ -1,74 +1,28 @@
-<div align="center"> <a href="https://genezio.com/">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/genez-io/graphics/raw/HEAD/svg/Icon_Genezio_White.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://github.com/genez-io/graphics/raw/HEAD/svg/Icon_Genezio_Black.svg">
-    <img alt="genezio logo" src="https://github.com/genez-io/graphics/raw/HEAD/svg/Icon_Genezio_Black.svg" height="100" >
-  </picture>
- </div>
+# WhatsApp bot to help you chat with your CRM data
 
-<div align="center">
+This bot builds conversational capabilities on top of an existing CRM that you can access via a web interface here: https://genezio-crm.app.genez.io/
 
-[![Join our community](https://img.shields.io/discord/1024296197575422022?style=social&label=Join%20our%20community%20&logo=discord&labelColor=6A7EC2)](https://discord.gg/uc9H5YKjXv)
-[![Follow @geneziodev](https://img.shields.io/twitter/url/https/twitter.com/geneziodev.svg?style=social&label=Follow%20%40geneziodev)](https://twitter.com/geneziodev)
+It is using OpenAI for LLM capabilities, listens to messages from WhatsApp Business via a webhook, and replies using WhatsApp's APIs.
 
-</div>
+Handles two user modes: unauthenticated and authenticated.
 
-# Genezio Express Getting Started
+When unauthenticated, it will guide the user to authenticate
 
-In the index.mjs file, you will see a very basic Express.js application that is set up to be deployed as a Genezio function. It handles a couple of requests (/ and /users).
+When authenticated, it will call the CRM's APIs as defined in the swagger file and try to help the user achieve their goals.
 
-You can update the Express application and then add a front-end to your application:
+See the code behind CRM in interacts with here: https://github.com/bogdanripa/Genezio-CRM/
 
-1. Create a client/index.html file.
-2. Update the genezio.yaml file and add a frontend section:
+Interact live with the WhatApp bot here: https://wa.me/40750266147
 
-```
-frontend:
-  path: client
-  publish: .
-```
+Conversation example:
 
-Then, in the client/index.html file, you can simply fetch data from the Express web app. You can see the Express app's URLs by clicking the "View your URLs" button in the editor.
-
-# Deploy
-:rocket: You can deploy your own version of the template to Genezio with one click:
-
-[![Deploy to Genezio](https://raw.githubusercontent.com/Genez-io/graphics/main/svg/deploy-button.svg)](https://app.genez.io/start/deploy?repository=https://github.com/Genez-io/express-getting-started)
-
-
-## Genezio CLI Commands
-
-Genezio also provides a CLI tool that you can use to deploy your project from your machine.
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install -g genezio`  | Installs genezio globally                        |
-| `genezio login`           | Logs in to genezio                               |
-| `genezio local`           | Starts a local server                            |
-| `genezio deploy`          | Deploys a production project                     |
-| `genezio --help`          | Get help using genezio                           |
-
-## Learn more
-
-To learn more about Genezio, take a look at the following resources:
-
-- [Official genezio documentation](https://genezio.com/docs)
-- [Tutorials](https://genezio.com/blog)
-
-## Contact
-
-If you need support or you have any questions, please join us in our [Discord channel](https://discord.gg/uc9H5YKjXv). We'd love to chat!
-
-## Built With
-
-- [Genezio](https://genezio.com/)
-- [Node.JS](https://nodejs.org/en/)
-- [Express](https://expressjs.com/)
-
-***
-
-<div align="center"> <a href="https://genezio.com/">
-  <p>Built with Genezio with ❤️ </p>
-  <img alt="genezio logo" src="https://raw.githubusercontent.com/Genez-io/graphics/main/svg/powered_by_genezio.svg" height="40">
-</div>
+| Me: Hi, who are you?
+| Agent: Hello! I’m a virtual assistant created to help you with questions and updates related to your CRM system. First, I need to authenticate you. Can you please provide your email address so we can begin the authentication process?
+| Me: Sure. My email address is b***@genezio.com
+| Agent: It looks like that email address doesn’t exist in our system. Please create a new account on our website: genezio-crm.app.genez.io. After you’ve created an account, please return here to complete the authentication. If you need help, I’m here to assist!
+| Me: Try with b***@genez.io then? Maybe that one works?
+| Agent: An email has been sent to your address with an authentication code. Please send me the code you received to continue the authentication process.
+| Me: One second
+| Agent: Of course, take all the time you need! I’ll be waiting for the authentication code when you’re ready.
+| Me: I received the code 1238266
+| Agent: Authentication was successful! You’re now logged into our CRM system. How can I assist you further?
