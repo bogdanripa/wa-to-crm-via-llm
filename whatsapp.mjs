@@ -57,7 +57,13 @@ async function sendMessage(to, text) {
     'Content-Type': 'application/json'
   };
   try {
-    await axios.post(url, payload, { headers });
+    const response = await axios.post(url, payload, { headers });
+    if (response.status === 200) {
+      console.log(`Message sent to ${to}: "${text}"`);
+      console.log('Response:', response.data);
+    } else {
+      console.error(`Failed to send message to ${to}:`, response.data);
+    }
   } catch (error) {
     console.error(`Error sending message to ${to}:`, error.message);
   }
