@@ -71,6 +71,7 @@ export async function getResponseFromLLM(user) {
     });
     let toolsToUse;
     if (user.token) {
+        // agent mode = user is authenticated
         inputMessages.unshift({role: "system", content: `
             You are talking to ${user.name}. Their phone number is ${from}, and their email address is ${user.email}.
             Today is ${new Date().toString()}.
@@ -93,6 +94,7 @@ export async function getResponseFromLLM(user) {
         `});
         toolsToUse = tools;
     } else {
+        // agent mode = user is not authenticated
         inputMessages.unshift({role: "system", content: `
             Today is ${new Date().toString()}.
             You are a helpful assistant helping the user query and make updates to their CRM system.
@@ -127,6 +129,7 @@ export async function getResponseFromLLM(user) {
                 if (!user.token) args.phone = user.phone;
 
                 let result = await callApi(toolName, args);
+                // TODO: treat token has expired
 
                 if (toolName == 'authenticate') {
                     try {
