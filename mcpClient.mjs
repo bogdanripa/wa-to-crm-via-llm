@@ -26,8 +26,8 @@ async function jsonRpcRequest(method, params, token=null) {
     }
     return data.result;
   } catch(e) {
-    console.error(e);
-    throw(e);
+    console.log(MCP_URL, headers, method, params, e);
+    return "Internal Error calling " + method;
   }
 }
 
