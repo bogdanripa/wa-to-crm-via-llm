@@ -109,12 +109,14 @@ export async function getResponseFromLLM(user) {
     const ret = {};
 
     while (true) {
+        console.log(inputMessages, toolsToUse)
         const res = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: inputMessages,
             tools: toolsToUse,
             tool_choice: "auto"
         });
+        console.log(res);
         const message = res.choices[0].message;
 
           if (message.tool_calls?.length) {
