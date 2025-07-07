@@ -25,7 +25,22 @@ const waUsersSchema = new mongoose.Schema({
 
 const WAUser = mongoose.model("WAUser", waUsersSchema);
 
+const toolsListSchema = new mongoose.Schema({
+    authenticated: Boolean,
+    tools: [{
+        name: String,
+        title: String,
+        description: String,
+        inputSchema: Object // refine as needed
+    }]
+}, {
+    timestamps: true
+});
+
+const ToolsList = mongoose.model("ToolsList", toolsListSchema);
+
 export {
     WAMessage, 
-    WAUser
+    WAUser,
+    ToolsList
 };

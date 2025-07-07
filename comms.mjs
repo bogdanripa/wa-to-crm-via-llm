@@ -1,5 +1,4 @@
 import {sendMessage as sendMessageViaWA} from './whatsapp.mjs';
-import {setCRMToken} from './tools.mjs';
 import {getResponseFromLLM, rewriteMessage} from './llm.mjs';
 import {WAMessage, WAUser} from './db.mjs';
 
@@ -37,8 +36,6 @@ export async function gotMessage(from, text) {
         waUser = new WAUser({phone: from});
         await waUser.save();
     }
-    if (waUser.token)
-        setCRMToken(waUser.token);
     
     await saveMessage(from, "assistant", text);
     const response = await getResponseFromLLM(waUser);

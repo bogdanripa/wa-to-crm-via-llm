@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { v4 as uuidv4 } from "uuid";
 import OpenAI from "openai";
-import {tools, authTools, callApi} from './tools.mjs';
+import { getToolsList, callTool } from './mcpClient.mjs';
 import {WAMessage} from './db.mjs';
 
 const openai = new OpenAI();
@@ -69,7 +68,6 @@ export async function getResponseFromLLM(user) {
         ? {role: "user", content: msg.message}
         : {role: msg.from, content: msg.message};
     });
-    let toolsToUse;
     if (user.token) {
         // agent mode = user is authenticated
         inputMessages.unshift({role: "system", content: `
@@ -92,7 +90,6 @@ export async function getResponseFromLLM(user) {
             - An account has a timeline, defined by multiple interactions with that account (meetings, calls, whatsapp messages, notes, emails, notes, sticky notes).
             - An interaction has participants (people involved in that interaction), a title, a description, and a date.
         `});
-        toolsToUse = tools;
     } else {
         // agent mode = user is not authenticated
         inputMessages.unshift({role: "system", content: `
@@ -106,8 +103,8 @@ export async function getResponseFromLLM(user) {
             The authenticate tool will return a token that we'll then store for subsequent communications.
             The CRM's homepage is https://genezio-crm.app.genez.io/
         `});
-        toolsToUse = authTools;
     }
+    const toolsToUse = await getToolsList(user.token);
     const ret = {};
 
     while (true) {
@@ -128,7 +125,7 @@ export async function getResponseFromLLM(user) {
 
                 if (!user.token) args.phone = user.phone;
 
-                let result = await callApi(toolName, args);
+                let result = await callTool(toolName, args, user.token);
                 // TODO: treat token has expired
 
                 if (toolName == 'authenticate') {
