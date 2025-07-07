@@ -7,6 +7,7 @@ mongoose.connect(process.env["GENEZIO_CRM_DATABASE_URL"]);
 const waMessageSchema = new mongoose.Schema({
     from: String,
     to: String,
+    phone: String,
     message: String,
 }, {
     timestamps: true
@@ -31,7 +32,8 @@ const toolsListSchema = new mongoose.Schema({
         name: String,
         title: String,
         description: String,
-        inputSchema: Object // refine as needed
+        inputSchema: Object,
+        _id: false // disables _id in subdocs
     }]
 }, {
     timestamps: true

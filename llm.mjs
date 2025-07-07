@@ -57,7 +57,8 @@ export async function getResponseFromLLM(user) {
     let messages = await WAMessage.find({
         $or: [
                 { from: from },
-                { to: from }
+                { to: from },
+                { phone: from}
             ]
         })
         .sort({ createdAt: -1 })
@@ -150,6 +151,7 @@ export async function getResponseFromLLM(user) {
                 WAMessage.create({
                     from: "assistant",
                     to: "tool",
+                    phone: user.phone,
                     message: `Calling ${toolName} with ${JSON.stringify(args)}`
                 });
 
@@ -163,6 +165,7 @@ export async function getResponseFromLLM(user) {
                 WAMessage.create({
                     from: "tool",
                     to: "assistant",
+                    phone: user.phone,
                     message: `Result of ${toolName}: ${JSON.stringify(result)}`
                 });
             }

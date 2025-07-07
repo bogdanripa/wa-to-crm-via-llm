@@ -13,16 +13,16 @@ export async function rewriteThenSendMessage(to, text) {
 
 export async function sendMessage(to, text) {
     // save the message to the database
-    await saveMessage("assistant", to, text);
+    await saveMessage("assistant", to, to, text);
     await sendMessageViaWA(to, text);
 }
 
-async function saveMessage(from, to, text) {
+async function saveMessage(from, to, phone, text) {
     if (!text || !from || !to) {
         console.error('Invalid parameters for saving message:', { from, to, text });
         return;
     }
-    const message = new WAMessage({from, to, message: text});
+    const message = new WAMessage({from, to, phone, message: text});
     try {
         await message.save();
     } catch (error) {
@@ -37,7 +37,7 @@ export async function gotMessage(from, text) {
         await waUser.save();
     }
     
-    await saveMessage(from, "assistant", text);
+    await saveMessage(from, "assistant", from, text);
     const response = await getResponseFromLLM(waUser);
     if (response.token) {
         console.log("Setting CRM token for user", from);
