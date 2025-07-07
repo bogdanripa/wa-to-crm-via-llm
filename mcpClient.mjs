@@ -22,8 +22,7 @@ async function jsonRpcRequest(method, params, token=null) {
   try {
     const data = JSON.parse(responseText);
     if (data.error) {
-      console.log(MCP_URL, headers, method, params)
-      throw new Error(`Error: ${data.error.message}`);
+      return data.error;
     }
     return data.result;
   } catch(e) {
