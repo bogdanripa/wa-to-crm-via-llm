@@ -130,10 +130,9 @@ export async function getResponseFromLLM(user) {
 
                 if (toolName == 'authenticate') {
                     try {
-                        const resultObj = JSON.parse(result);
-                        if (resultObj.token) {
-                            ret.token = resultObj.token;
-                            ret.name = resultObj.name;
+                        if (result.token) {
+                            ret.token = result.token;
+                            ret.name = result.name;
                             ret.email = args.email;
                             result = "The user is now authenticated."
                         }
@@ -170,7 +169,6 @@ export async function getResponseFromLLM(user) {
         } else {
             // Final assistant answer
             ret.message = message.content;
-            console.log("✅ Assistant:", ret.message);
             return ret;
         }
     }

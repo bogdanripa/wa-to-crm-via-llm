@@ -18,13 +18,19 @@ async function jsonRpcRequest(method, params, token=null) {
     })
   });
 
-  const data = await response.json();
-  if (data.error) {
-    console.log(MCP_URL, headers, method, params)
-    throw new Error(`Error: ${data.error.message}`);
+  const responseText = await response.text();
+  try {
+    const data = JSON.parse(responseText);
+    if (data.error) {
+      console.log(MCP_URL, headers, method, params)
+      throw new Error(`Error: ${data.error.message}`);
+    }
+    return data.result;
+  } catch(e) {
+    console.error(e);
+    throw(e);
   }
-  return data.result;
-}  
+}
 
 async function getToolsList(token = null) {
   const authenticated = !!token;
