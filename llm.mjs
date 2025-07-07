@@ -127,6 +127,7 @@ export async function getResponseFromLLM(user) {
                 if (!user.token) args.phone = user.phone;
 
                 let result = await callTool(toolName, args, user.token);
+                console.log(result)
                 // TODO: treat token has expired
 
                 if (toolName == 'authenticate') {
