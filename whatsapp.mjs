@@ -27,16 +27,17 @@ router.post('/webhook', async (req, res) => {
 
     if (messages && messages.length > 0) {
       const msg = messages[0];
-      const from = msg.from;
+      const phone = msg.from;
       const text = msg.text?.body;
 
-      console.log(`Received message: "${text}" from ${from}`);
+      console.log(`Received message: "${text}" from ${phone}`);
 
       if (!messageCallback) {
         console.error('No message callback set');
         return res.sendStatus(500);
       }
-      await messageCallback(from, text);
+      const response = await messageCallback({phone, text});
+      await sendMessage(phone, response);
     }
     res.sendStatus(200);
   } else {
@@ -53,8 +54,8 @@ async function sendMessage(to, text) {
     text: { body: text }
   }
   const headers = {
-    'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-    'Content-Type': 'application/json'
+    'authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+    'content-type': 'application/json'
   };
   try {
     const response = await axios.post(url, payload, { headers });
@@ -68,11 +69,11 @@ async function sendMessage(to, text) {
   }
 }
 
-function setMessageCallback(callback) {
+function setWAMessageCallback(callback) {
   if (typeof callback !== 'function') {
     throw new Error('Callback must be a function');
   }
   messageCallback = callback;
 }
 
-export {router, sendMessage, setMessageCallback}
+export {router, sendMessage, setWAMessageCallback}

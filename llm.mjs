@@ -7,6 +7,14 @@ import {WAMessage} from './db.mjs';
 
 const openai = new OpenAI();
 
+function truncateLongStringsReplacer(key, value) {
+    if (typeof value === "string" && value.length > 50) {
+      return value.slice(0, 50) + "...";
+    }
+    return value;
+}
+  
+
 export async function rewriteMessage(phone, message) {
     if (!message || typeof message !== 'string') {
         console.error('Invalid message for rewriting:', message);
@@ -51,23 +59,34 @@ ${conversationHistory}
     }
 }
 
-export async function getResponseFromLLM(user) {
-    const from = user.phone;
+export async function getResponseFromLLM(user, from, conversationId) {
     let inputMessages = [];
     let messages = await WAMessage.find({
         $or: [
                 { from: from },
-                { to: from },
-                { phone: from}
+                { to: from }
             ]
         })
         .sort({ createdAt: -1 })
         .limit(10);
     messages = messages.reverse();
     inputMessages = messages.map(msg => {
-        return msg.from.match(/\d+/i)
-        ? {role: "user", content: msg.message}
-        : {role: msg.from, content: msg.message};
+        const isUser = msg.from.match(/\d+/i) || msg.from.includes("@");
+    
+        const mapped = {
+            role: isUser ? "user" : msg.from,
+            content: msg.message
+        };
+    
+        if (msg.tool_call_id) {
+            mapped.tool_call_id = msg.tool_call_id;
+        }
+
+        if (msg.tool_calls) {
+            mapped.tool_calls = msg.tool_calls
+        }
+    
+        return mapped;
     });
     if (user.token) {
         // agent mode = user is authenticated
@@ -81,6 +100,8 @@ export async function getResponseFromLLM(user) {
             Do not share IDs (like Account IDs, Contact IDs, Action Item IDs, etc) with the user. Those are to be used internally when calling tools.
             If you encounter a name and don't know what it is, use the 'get_find' tool to look it up.
             When discussion with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.
+            When calling tools, you must strictly match the exact JSON Schema field names (including casing).
+            ---------
             The CRM's homepage is https://genezio-crm.app.genez.io/
             CRM capabilities:
             - A user has access to all CRM accounts created by themselves or other users sharing the same email domain name.
@@ -89,7 +110,7 @@ export async function getResponseFromLLM(user) {
             - An account has multiple team members (people working on that account).
             - An account has multiple action items (tasks to be done). An action item has a deadline and can be assigned to a team member.
             - An account has a timeline, defined by multiple interactions with that account (meetings, calls, whatsapp messages, notes, emails, notes, sticky notes).
-            - An interaction has participants (people involved in that interaction), a title, a description, and a date.
+            - An interaction has attendees (people involved in that interaction), a title, a description, and a date.
         `});
     } else {
         // agent mode = user is not authenticated
@@ -102,6 +123,7 @@ export async function getResponseFromLLM(user) {
             Next, you will ask the user to type back the auth code they received over email.
             Once they have provided the auth code back, you will call the "authenticate" tool with their email and auth code.
             The authenticate tool will return a token that we'll then store for subsequent communications.
+            When calling tools, you must strictly match the exact JSON Schema field names (including casing).
             The CRM's homepage is https://genezio-crm.app.genez.io/
         `});
     }
@@ -109,27 +131,27 @@ export async function getResponseFromLLM(user) {
     const ret = {};
 
     while (true) {
-        console.log(inputMessages, toolsToUse)
         const res = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: inputMessages,
             tools: toolsToUse,
             tool_choice: "auto"
         });
-        console.log(res);
-        const message = res.choices[0].message;
+        //console.log("1 " + JSON.stringify(inputMessages, truncateLongStringsReplacer, 2));
+        //console.log("2 " + JSON.stringify(toolsToUse, truncateLongStringsReplacer, 2));
+        const message = res.choices[0].message;        
+        //console.log("3 " + JSON.stringify(message, truncateLongStringsReplacer, 2));
 
           if (message.tool_calls?.length) {
             for (const toolCall of message.tool_calls) {
                 const toolName = toolCall.function.name;
-                const args = JSON.parse(toolCall.function.arguments);
+                const args = JSON.parse(toolCall.function.arguments);                
 
                 console.log(`🔧 Calling ${toolName} with`, args);
 
                 if (!user.token) args.phone = user.phone;
 
                 let result = await callTool(toolName, args, user.token);
-                console.log(result)
                 // TODO: treat token has expired
 
                 if (toolName == 'authenticate') {
@@ -147,29 +169,36 @@ export async function getResponseFromLLM(user) {
 
                 inputMessages.push({
                     role: "assistant",
-                    content: `Calling ${toolName} with ${JSON.stringify(args)}`,
+                    content: `Calling ${toolName} with 
+\`\`\`json
+${JSON.stringify(args)}
+\`\`\``,
                     tool_calls: [toolCall]
-                });
-
-                WAMessage.create({
-                    from: "assistant",
-                    to: "tool",
-                    phone: user.phone,
-                    message: `Calling ${toolName} with ${JSON.stringify(args)}`
                 });
 
                 inputMessages.push({
                     role: "tool",
                     tool_call_id: toolCall.id,
                     name: toolName,
-                    content: JSON.stringify(result)
+                    content: `\`\`\`json
+${JSON.stringify(result)}
+\`\`\``
                 });
 
-                WAMessage.create({
-                    from: "tool",
-                    to: "assistant",
-                    phone: user.phone,
-                    message: `Result of ${toolName}: ${JSON.stringify(result)}`
+                await WAMessage.create({
+                    from: "system",
+                    to: from,
+                    phone: from,
+                    message: `Called ${toolName} with
+\`\`\`json
+${JSON.stringify(args, truncateLongStringsReplacer, 2)}
+\`\`\`
+
+And got
+\`\`\`json
+${JSON.stringify(result, truncateLongStringsReplacer, 2)}
+\`\`\``, 
+                    conversationId
                 });
             }
         } else {

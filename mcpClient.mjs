@@ -5,7 +5,7 @@ const MCP_URL = process.env.CRM_URL + '/mcp';
 async function jsonRpcRequest(method, params, token=null) {
   const headers = { "Content-Type": "application/json" };
   if (token) {
-      headers.Authorization = "Bearer " + token;
+      headers.authorization = "Bearer " + token;
   }
   const response = await fetch(MCP_URL, {
     method: "POST",
@@ -59,7 +59,7 @@ async function getToolsList(token = null) {
   return [];
 }
 
-async function callTool(tool, args=[], token=null) {
+async function callTool(tool, args={}, token=null) {
     return await jsonRpcRequest("tools/call", {
         name: tool,
         arguments: args

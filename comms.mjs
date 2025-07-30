@@ -8,21 +8,16 @@ export async function rewriteThenSendMessage(to, text) {
         return;
     }
     const rewrittenMessage = await rewriteMessage(to, text);
-    await sendMessage(to, rewrittenMessage);
+    await saveMessage("assistant", to, to, rewrittenMessage);
+    await sendMessageViaWA(to, rewrittenMessage);
 }
 
-export async function sendMessage(to, text) {
-    // save the message to the database
-    await saveMessage("assistant", to, to, text);
-    await sendMessageViaWA(to, text);
-}
-
-async function saveMessage(from, to, phone, text) {
+async function saveMessage(from, to, phone, text, conversationId) {
     if (!text || !from || !to) {
         console.error('Invalid parameters for saving message:', { from, to, text });
         return;
     }
-    const message = new WAMessage({from, to, phone, message: text});
+    const message = new WAMessage({from, to, phone, message: text, conversationId});
     try {
         await message.save();
     } catch (error) {
@@ -30,21 +25,33 @@ async function saveMessage(from, to, phone, text) {
     }
 }
 
-export async function gotMessage(from, text) {
-    let waUser = await WAUser.findOne({phone: from});    
-    if (!waUser) {
-        waUser = new WAUser({phone: from});
+export async function gotMessage({ email, phone, text, conversationId }) {
+    const orFilters = [];
+    if (phone !== undefined) orFilters.push({ phone });
+    if (email !== undefined) orFilters.push({ email });
+    
+    let waUser = await WAUser.findOne({
+        $or: orFilters
+    });
+
+    if (!waUser && phone) {
+        waUser = new WAUser({ phone });
         await waUser.save();
     }
-    
-    await saveMessage(from, "assistant", from, text);
-    const response = await getResponseFromLLM(waUser);
+
+    if (!waUser) {
+        return "User not found";
+    }
+
+    await saveMessage(phone || email, "assistant", phone || email, text, conversationId);
+    const response = await getResponseFromLLM(waUser, phone || email, conversationId);
     if (response.token) {
-        console.log("Setting CRM token for user", from);
+        console.log("Setting CRM token for user", phone || email);
         waUser.token = response.token;
         waUser.email = response.email;
         waUser.name  = response.name;
         await waUser.save();
     }
-    await sendMessage(from, response.message);
+    await saveMessage("assistant", phone || email, phone || email, response.message, conversationId);
+    return response.message;
 }

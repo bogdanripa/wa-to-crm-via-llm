@@ -9,6 +9,9 @@ const waMessageSchema = new mongoose.Schema({
     to: String,
     phone: String,
     message: String,
+    conversationId: String,
+    tool_call_id: String,
+    tool_calls: Object
 }, {
     timestamps: true
 });
