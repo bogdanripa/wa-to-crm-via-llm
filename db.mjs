@@ -33,10 +33,10 @@ const WAUser = mongoose.model("WAUser", waUsersSchema);
 const toolsListSchema = new mongoose.Schema({
     authenticated: Boolean,
     tools: [{
+        type: String,
         name: String,
-        title: String,
         description: String,
-        inputSchema: Object,
+        parameters: Object,
         _id: false // disables _id in subdocs
     }]
 }, {
