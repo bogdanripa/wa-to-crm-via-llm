@@ -46,14 +46,9 @@ async function getToolsList(token = null) {
       { authenticated, tools: list },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
-
   }
   if (Array.isArray(list)) {
-    const retList = list.map(item => ({
-      type: "function",
-      function: item
-    }));
-    return retList;
+    return list;
   }
 
   return [];
