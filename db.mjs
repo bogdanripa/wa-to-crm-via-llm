@@ -23,6 +23,7 @@ const waUsersSchema = new mongoose.Schema({
     phone: String,
     email: String,
     token: String,
+    previous_response_id: String
 }, {
     timestamps: true
 });
