@@ -1,4 +1,4 @@
-
+import { tool } from '@openai/agents';
 import { ToolsList } from './db.mjs'
 const MCP_URL = process.env.CRM_URL + '/mcp';
 
@@ -31,7 +31,7 @@ async function jsonRpcRequest(method, params, token=null) {
   }
 }
 
-async function getToolsList(token = null) {
+async function getToolsList(token = null, phone = null) {
   const authenticated = !!token;
   let list = [];
 
@@ -48,13 +48,28 @@ async function getToolsList(token = null) {
     );
   }
   if (Array.isArray(list)) {
-    return list;
+    const ret = [];
+
+    // call tool for each list element
+    list.forEach(t => {
+      ret.push(tool({
+        ...t,
+        execute: async (args) => {
+          if (!token) {
+            args.phone = phone;
+          }
+          return await callTool(t.name, args, token)
+        }
+      }));
+    });
+    return ret;
   }
 
   return [];
 }
 
 async function callTool(tool, args={}, token=null) {
+    console.log(`🔧 Calling ${tool} with`, args);
     return await jsonRpcRequest("tools/call", {
         name: tool,
         arguments: args

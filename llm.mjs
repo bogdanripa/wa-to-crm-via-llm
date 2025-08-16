@@ -56,27 +56,11 @@ function extractToolCalls(resp) {
   // Normalize Responses API tool-call items to your { name, arguments, id } shape
   const out = [];
   for (const item of resp.output ?? []) {
-    if (item.type === "tool_call" && item.tool_call) {
-      const { name, arguments: args, id } = item.tool_call;
-      out.push({
-        id: id || `tc_${out.length + 1}`,
-        function: {
-          name,
-          arguments: typeof args === "string" ? args : JSON.stringify(args ?? {})
-        }
-      });
-    }
+    if (item.type === "function_call") {
+      out.push(item);
+    };
   }
   return out;
-}
-
-function makeToolMessage(name, tool_call_id, resultObj) {
-  return {
-    role: "tool",
-    name,
-    tool_call_id,
-    content: JSON.stringify(resultObj)
-  };
 }
 
 export async function getResponseFromLLM(user, from, input, conversationId) {
@@ -120,10 +104,12 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
             The CRM's homepage is https://genezio-crm.app.genez.io/
         `;
     }
-    const toolsToUse = await getToolsList(user.token);
+    const toolsToUse = await getToolsList(user.token, user.phone);
     const ret = {};
     let previous_response_id = user.previous_response_id;
-    let nextInput = Array.isArray(input) ? input : [{ role: "user", content: input }];
+    //let nextInput = Array.isArray(input) ? input : [{ role: "user", content: input }];
+    let nextInput = input;
+    let assistantText = 'Waiting...';
 
     while (true) {
         const payload = {
@@ -138,24 +124,30 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
             payload.previous_response_id = previous_response_id;
         }
 
+        //console.log("1 " + JSON.stringify(payload, truncateLongStringsReplacer, 2));
         const res = await openai.responses.create(payload);
         previous_response_id = res.id;
         //console.log("2 " + JSON.stringify(toolsToUse, truncateLongStringsReplacer, 2));
         //console.log("3 " + JSON.stringify(res, truncateLongStringsReplacer, 2));
 
         // If there are tool calls, run them (using your existing logic)
-        const toolCalls = extractToolCalls(res);
-        if (toolCalls.length) {
+        if (res.output.length) {
             const toolMessages = [];
 
-            for (const toolCall of toolCalls) {
-                const toolName = toolCall.function.name;
-                const args = JSON.parse(toolCall.function.arguments);
-
-                console.log(`🔧 Calling ${toolName} with`, args);
+            for (const outputItem of res.output) {
+                if (outputItem.type == "message") {
+                    assistantText = outputItem.content[0].text;
+                    continue;
+                }
+                const toolName = outputItem.name;
+                if (!outputItem.arguments) {
+                    console.error(`Tool ${toolName} has no arguments:`, outputItem);
+                    continue;
+                }
+                const args = JSON.parse(outputItem.arguments);
 
                 if (!user.token) args.phone = user.phone;
-
+                console.log(`Tool call: ${toolName}(${JSON.stringify(args, truncateLongStringsReplacer)})`);
                 let result = await callTool(toolName, args, user.token);
 
                 if (toolName === 'authenticate') {
@@ -171,34 +163,16 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
                     }
                 }
 
-                await WAMessage.create({
-                    from: "system",
-                    to: from,
-                    phone: from,
-                    message: `Called ${toolName} with
-\`\`\`json
-${JSON.stringify(args, truncateLongStringsReplacer, 2)}
-\`\`\`
-
-And got
-\`\`\`json
-${JSON.stringify(result, truncateLongStringsReplacer, 2)}
-\`\`\``,
-                    conversationId,
-                    // NEW: store the response id that led to this tool call
+                toolMessages.push({
+                    type: "function_call_output",
+                    call_id: outputItem.call_id,
+                    output: JSON.stringify(result),
                 });
-
-                toolMessages.push(makeToolMessage(toolName, toolCall.id, result));
+                console.log(`Tool call response: ${toolName} → ${JSON.stringify(result, truncateLongStringsReplacer)}`);
             }
             nextInput = toolMessages;
-
-            // After handling tools, loop again so the model can continue
-            // Now our "previousId" becomes the id from the last model turn.
-            continue;
         }
-
-        // No tool calls → final assistant answer
-        const assistantText = (res.output_text ?? "").trim();
+        // No more tool calls → final assistant answer
         ret.message = assistantText;
 
         user.previous_response_id = previous_response_id;
