@@ -110,8 +110,10 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
     //let nextInput = Array.isArray(input) ? input : [{ role: "user", content: input }];
     let nextInput = input;
     let assistantText = 'Waiting...';
+    let turn = 0;
 
-    while (true) {
+    while (turn++ < 10) {
+        if (!nextInput) return;
         const payload = {
             model: "gpt-4o",
             instructions,
@@ -125,7 +127,14 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
         }
 
         //console.log("1 " + JSON.stringify(payload, truncateLongStringsReplacer, 2));
-        const res = await openai.responses.create(payload);
+        let res;
+        try {
+            res = await openai.responses.create(payload);
+        } catch (error) {
+            console.error("Error occurred while fetching response:", error);
+            previous_response_id = undefined;
+            continue;
+        }
         previous_response_id = res.id;
         //console.log("2 " + JSON.stringify(toolsToUse, truncateLongStringsReplacer, 2));
         //console.log("3 " + JSON.stringify(res, truncateLongStringsReplacer, 2));
@@ -135,9 +144,11 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
             const toolMessages = [];
 
             for (const outputItem of res.output) {
+                console.log(outputItem);
                 if (outputItem.type == "message") {
                     assistantText = outputItem.content[0].text;
-                    continue;
+                    turn = 100;
+                    break;
                 }
                 const toolName = outputItem.name;
                 if (!outputItem.arguments) {
@@ -171,22 +182,24 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
                 console.log(`Tool call response: ${toolName} → ${JSON.stringify(result, truncateLongStringsReplacer)}`);
             }
             nextInput = toolMessages;
+        } else {
+            assistantText = res.text;
         }
-        // No more tool calls → final assistant answer
-        ret.message = assistantText;
-
-        user.previous_response_id = previous_response_id;
-        await user.save();
-
-        // Store the assistant turn with its response id for chaining
-        await WAMessage.create({
-            from: "assistant",
-            to: from,
-            phone: from,
-            message: assistantText,
-            conversationId,
-        });
-
-        return ret;
     }
+    // No more tool calls → final assistant answer
+    ret.message = assistantText;
+
+    user.previous_response_id = previous_response_id;
+    await user.save();
+
+    // Store the assistant turn with its response id for chaining
+    await WAMessage.create({
+        from: "assistant",
+        to: from,
+        phone: from,
+        message: assistantText,
+        conversationId,
+    });
+
+    return ret;
 }
