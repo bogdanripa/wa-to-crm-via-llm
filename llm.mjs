@@ -140,11 +140,6 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
         console.log(`Updating previous_response_id from ${previous_response_id} to ${res.id}`);
         previous_response_id = res.id;
 
-        if(res.output_text) {
-            assistantText = res.output_text;
-            break; // If we have a text response, we can stop here
-        }
-
         // If there are tool calls, run them (using your existing logic)
         if (res.output.length) {
             const toolMessages = [];
@@ -186,7 +181,14 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
                 });
                 console.log(`Tool call response: ${toolName} → ${JSON.stringify(result, truncateLongStringsReplacer)}`);
             }
+            if (toolMessages.length === 0) {
+                assistantText = res.output_text;
+                break;
+            }
             nextInput = toolMessages;
+        } else {
+            assistantText = res.output_text;
+            break; // If we have a text response, we can stop here
         }
     }
     // No more tool calls → final assistant answer
