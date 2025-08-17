@@ -50,12 +50,10 @@ export async function gotMessage({ email, phone, text, conversationId }) {
     // check last conversation time
     let shouldDropLastRespId = true;
 
-    if (phone) {
-        const lastConversation = await WAMessage.findOne({ $or: orMessageFilters }).sort({ createdAt: -1 });
-        if (lastConversation) {
-            if ((Date.now() - lastConversation.createdAt.getTime()) < 24 * 60 * 60 * 1000) {
-                shouldDropLastRespId = false;
-            }
+    const lastConversation = await WAMessage.findOne({ $or: orMessageFilters }).sort({ createdAt: -1 });
+    if (lastConversation) {
+        if ((Date.now() - lastConversation.createdAt.getTime()) < 24 * 60 * 60 * 1000) {
+            shouldDropLastRespId = false;
         }
     }
 
