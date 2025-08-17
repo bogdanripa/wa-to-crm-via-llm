@@ -117,6 +117,7 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
             model: "gpt-4o",
             instructions,
             input: nextInput,
+            store: true,
             tools: toolsToUse,
             tool_choice: "auto"
         };
@@ -146,7 +147,10 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
             const toolMessages = [];
 
             for (const outputItem of res.output) {
-                console.log("outputItem type", outputItem.type);
+                if (outputItem.type !== "function_call") {
+                    console.log("Untreated outputItem type", outputItem.type);
+                    continue;
+                }
                 const toolName = outputItem.name;
                 if (!outputItem.arguments) {
                     console.error(`Tool ${toolName} has no arguments:`, outputItem);
