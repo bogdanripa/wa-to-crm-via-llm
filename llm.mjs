@@ -124,6 +124,7 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
 
         if (previous_response_id) {
             payload.previous_response_id = previous_response_id;
+            console.log(`Using previous_response_id: ${previous_response_id}`);
         }
 
         //console.log("1 " + JSON.stringify(payload, truncateLongStringsReplacer, 2));
@@ -132,9 +133,11 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
             res = await openai.responses.create(payload);
         } catch (error) {
             console.error("Error occurred while fetching response:", error);
+            console.log(`resetting previous_response_id from ${previous_response_id} to undefined`);
             previous_response_id = undefined;
             continue;
         }
+        console.log(`Updating previous_response_id from ${previous_response_id} to ${res.id}`);
         previous_response_id = res.id;
 
         if(res.output_text) {
@@ -188,6 +191,7 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
     // No more tool calls → final assistant answer
     ret.message = assistantText;
 
+    console.log(`Saving previous_response_id: ${previous_response_id}`);
     user.previous_response_id = previous_response_id;
     await user.save();
 
