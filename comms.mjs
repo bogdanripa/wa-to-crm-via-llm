@@ -29,7 +29,11 @@ export async function gotMessage({ email, phone, text, conversationId }) {
     const orFilters = [];
     if (phone !== undefined) orFilters.push({ phone });
     if (email !== undefined) orFilters.push({ email });
-    
+
+    const orMessageFilters = [];
+    if (phone !== undefined) orMessageFilters.push({ phone });
+    if (email !== undefined) orMessageFilters.push({ to: email });
+
     let waUser = await WAUser.findOne({
         $or: orFilters
     });
@@ -47,7 +51,7 @@ export async function gotMessage({ email, phone, text, conversationId }) {
     let shouldDropLastRespId = true;
 
     if (phone) {
-        const lastConversation = await WAMessage.findOne({ phone }).sort({ createdAt: -1 });
+        const lastConversation = await WAMessage.findOne({ $or: orMessageFilters }).sort({ createdAt: -1 });
         if (lastConversation) {
             if ((Date.now() - lastConversation.createdAt.getTime()) < 24 * 60 * 60 * 1000) {
                 shouldDropLastRespId = false;
