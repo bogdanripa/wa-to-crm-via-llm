@@ -29,6 +29,7 @@ router.post('/webhook', async (req, res) => {
       const msg = messages[0];
       const phone = msg.from;
       const text = msg.text?.body;
+      const wamid = msg.id; // needed to mark as read
 
       console.log(`Received message: "${text}" from ${phone}`);
 
@@ -36,6 +37,9 @@ router.post('/webhook', async (req, res) => {
         console.error('No message callback set');
         return res.sendStatus(500);
       }
+
+      sendTyping(phone, wamid);
+      
       const response = await messageCallback({phone, text});
       await sendMessage(phone, response);
     }
@@ -44,6 +48,28 @@ router.post('/webhook', async (req, res) => {
     res.sendStatus(404);
   }
 });
+
+async function sendTyping(to, messageId) {
+  try {
+    const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+    const payload = {
+      messaging_product: 'whatsapp',
+      status: 'read',
+      message_id: messageId,
+      typing_indicator: {
+        type: "text"
+      }
+    };
+    const headers = {
+      Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+      'Content-Type': 'application/json'
+    };
+    await axios.post(url, payload, { headers });
+    console.log(`Typing indicator (${status}) sent to ${to}`);
+  } catch (error) {
+    console.error(`Error sending typing indicator to ${to}:`, error.message, error.response?.data);
+  }
+}
 
 async function sendMessage(to, text) {
   const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
