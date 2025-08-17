@@ -65,7 +65,7 @@ async function sendTyping(to, messageId) {
       'Content-Type': 'application/json'
     };
     await axios.post(url, payload, { headers });
-    console.log(`Typing indicator (${status}) sent to ${to}`);
+    console.log(`Typing indicator sent to ${to}`);
   } catch (error) {
     console.error(`Error sending typing indicator to ${to}:`, error.message, error.response?.data);
   }
