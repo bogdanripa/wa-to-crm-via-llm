@@ -43,8 +43,20 @@ export async function gotMessage({ email, phone, text, conversationId }) {
         return "User not found";
     }
 
+    // check last conversation time
+    let shouldDropLastRespId = true;
+
+    if (phone) {
+        const lastConversation = await WAMessage.findOne({ phone }).sort({ createdAt: -1 });
+        if (lastConversation) {
+            if ((Date.now() - lastConversation.createdAt.getTime()) < 24 * 60 * 60 * 1000) {
+                shouldDropLastRespId = false;
+            }
+        }
+    }
+
     await saveMessage(phone || email, "assistant", phone || email, text, conversationId);
-    const response = await getResponseFromLLM(waUser, phone || email, text, conversationId);
+    const response = await getResponseFromLLM(waUser, phone || email, text, conversationId, shouldDropLastRespId);
     if (response.token) {
         console.log("Setting CRM token for user", phone || email);
         waUser.token = response.token;

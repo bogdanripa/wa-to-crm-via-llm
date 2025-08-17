@@ -63,7 +63,7 @@ function extractToolCalls(resp) {
   return out;
 }
 
-export async function getResponseFromLLM(user, from, input, conversationId) {
+export async function getResponseFromLLM(user, from, input, conversationId, shouldDropLastRespId = false) {
     let instructions = '';
     if (user.token) {
         // agent mode = user is authenticated
@@ -106,8 +106,7 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
     }
     const toolsToUse = await getToolsList(user.token, user.phone);
     const ret = {};
-    let previous_response_id = user.previous_response_id;
-    //let nextInput = Array.isArray(input) ? input : [{ role: "user", content: input }];
+    let previous_response_id = shouldDropLastRespId?undefined:user.previous_response_id;
     let nextInput = input;
     let assistantText = 'Waiting...';
     let turn = 0;
@@ -136,20 +135,18 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
             continue;
         }
         previous_response_id = res.id;
-        //console.log("2 " + JSON.stringify(toolsToUse, truncateLongStringsReplacer, 2));
-        //console.log("3 " + JSON.stringify(res, truncateLongStringsReplacer, 2));
+
+        if(res.output_text) {
+            assistantText = res.output_text;
+            break; // If we have a text response, we can stop here
+        }
 
         // If there are tool calls, run them (using your existing logic)
         if (res.output.length) {
             const toolMessages = [];
 
             for (const outputItem of res.output) {
-                console.log(outputItem);
-                if (outputItem.type == "message") {
-                    assistantText = outputItem.content[0].text;
-                    turn = 100;
-                    break;
-                }
+                console.log("outputItem type", outputItem.type);
                 const toolName = outputItem.name;
                 if (!outputItem.arguments) {
                     console.error(`Tool ${toolName} has no arguments:`, outputItem);
@@ -182,8 +179,6 @@ export async function getResponseFromLLM(user, from, input, conversationId) {
                 console.log(`Tool call response: ${toolName} → ${JSON.stringify(result, truncateLongStringsReplacer)}`);
             }
             nextInput = toolMessages;
-        } else {
-            assistantText = res.text;
         }
     }
     // No more tool calls → final assistant answer
