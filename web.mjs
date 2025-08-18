@@ -10,16 +10,6 @@ let messageCallback = null;
 const router = express.Router();
 
 async function resetCRM(email, phone, token) {
-    const filter=[];
-    if (email) {
-        filter.push({from: email});
-        filter.push({to: email});
-    }
-    if (phone) {
-        filter.push({from: phone});
-        filter.push({to: phone});
-    }
-
     // delete all interactions from the "Terminator" account
     const terminatorFindings = await callTool("findByName", {name: "Terminator"}, token);
     if (terminatorFindings.length) {
@@ -47,10 +37,6 @@ async function resetCRM(email, phone, token) {
             }
         } 
     }
-
-    // await WAMessage.deleteMany({
-    //     $or: filter
-    // });
 }
 
 router.post('/message', async (req, res) => {
@@ -103,6 +89,8 @@ router.post('/message', async (req, res) => {
         response = "Reset";
 
         await resetCRM(user.email, user.phone, token);
+        user.previous_response_id = undefined;
+        await user.save();
     } else {
         response = await messageCallback({email, text, conversationId});
     }
