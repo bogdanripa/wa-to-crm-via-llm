@@ -143,6 +143,7 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
             const toolMessages = [];
 
             for (const outputItem of res.output) {
+                if (outputItem.type === 'message') continue;
                 console.log(`Processing outputItem: ${JSON.stringify(outputItem, truncateLongStringsReplacer)}`);
                 if (outputItem.type !== "function_call") {
                     console.log("Untreated outputItem type", outputItem.type);

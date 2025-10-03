@@ -31,7 +31,7 @@ router.post('/webhook', async (req, res) => {
       const text = msg.text?.body;
       const wamid = msg.id; // needed to mark as read
 
-      console.log(`Received message: "${text}" from ${phone}`);
+      console.log(`⬅️ "${text}" from ${phone}`);
 
       if (!messageCallback) {
         console.error('No message callback set');
@@ -85,7 +85,7 @@ async function sendMessage(to, text) {
   try {
     const response = await axios.post(url, payload, { headers });
     if (response.status === 200) {
-      console.log(`Message sent to ${to}: "${text}"`);
+      console.log(`➡️ "${text}" to ${to}`);
     } else {
       console.error(`Failed to send message to ${to}:`, response.data);
     }

@@ -79,7 +79,7 @@ router.post('/message', async (req, res) => {
             email = user.email;
         }
     }
-    console.log(`Received web message: "${text}" from ${email}`);
+    console.log(`⬅️ "${text}" from ${email}`);
     if (!messageCallback) {
         console.error('No message callback set');
         return res.sendStatus(500);
@@ -94,7 +94,7 @@ router.post('/message', async (req, res) => {
     } else {
         response = await messageCallback({email, text, conversationId});
     }
-    console.log(`Answered via web: ${response}`);
+    console.log(`➡️ "${response}" to ${email}`);
     res.send(response);
 })
 
