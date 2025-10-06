@@ -7,6 +7,7 @@ import { router as webRouter, setWebMessageCallback } from './web.mjs';
 import {rewriteThenSendMessage, gotMessage} from './comms.mjs';
 import { ToolsList, WAMessage } from './db.mjs';
 import { marked } from 'marked';
+import { WAUser } from './db.mjs';
 
 setWAMessageCallback(gotMessage);
 setWebMessageCallback(gotMessage);
@@ -44,6 +45,31 @@ app.post('/sendMessage', async (req, res) => {
     console.error('Error sending message:', error.message);
     res.status(500).json({ error: 'Failed to send message' });
   }
+});
+
+app.post('/signUpUser', async (req, res) => {
+  const bearer = req.headers.authorization;
+  if (!bearer || bearer !== `Bearer ${process.env.EMAIL_CODE_AUTH_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { secret, name, email, token } = req.body;
+
+  const user = await WAUser.findOne({ secret });
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  user.name = name;
+  user.email = email;
+  user.token = token;
+  user.secret = undefined;
+
+  await user.save();
+
+  await rewriteThenSendMessage(phone, "Welcome! You are now authenticated.");
+
+  res.status(200).json({ phone: user.phone });
 });
 
 function highlightJsonBlocks(text) {

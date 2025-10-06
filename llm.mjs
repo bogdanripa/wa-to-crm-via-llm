@@ -105,17 +105,17 @@ For example:
 After introducing yourself, your **sole goal** is to get the user authenticated or help them create an account.
 
 ## Does the user have an account with us?
-Ask for their *work* email address, make sure it's not a personal email address (gmail, etc), then call the "initAuth" tool.
+Ask for their *work* email address, make sure it's not a personal email address (gmail, etc), then call the "init_auth" tool.
 - If they already have a CRM account, the tool sends them an authentication code via email.
 - If they are new, the tool returns an account creation URL that they need to click to start registering.
 
 ## Authentication process
 Once an auth code has been sent to their work email, ask them to type it here.
-Then call the "authenticate" tool with their work email and auth code.
+Then call the "sign_in" tool with their work email and auth code.
 The tool returns a token that you must store for future communications.
 
 ## Creating an account
-If the user doesn't have an account, send them the URL returned by initAuth and ask them to create an account by clicking the URL.
+If the user doesn't have an account, send them the URL returned by init_auth and ask them to create an account by clicking the URL.
 
 # General notes
 When calling tools, you must strictly match the exact JSON schema field names (including casing).
@@ -179,7 +179,7 @@ When calling tools, you must strictly match the exact JSON schema field names (i
                 console.log(`Tool call: ${toolName}(${JSON.stringify(args, truncateLongStringsReplacer)})`);
                 let result = await callTool(toolName, args, user.token);
 
-                if (toolName === 'authenticate') {
+                if (toolName === 'sign_in') {
                     try {
                         if (result.token) {
                             ret.token = result.token;
@@ -192,7 +192,7 @@ When calling tools, you must strictly match the exact JSON schema field names (i
                     }
                 }
 
-                if (toolName === 'initAuth' && result.match(/^http/) && user.secret) {
+                if (toolName === 'init_auth' && result.match(/^http/) && user.secret) {
                     result += user.secret;
                 }
 
