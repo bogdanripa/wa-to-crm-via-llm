@@ -47,11 +47,14 @@ router.post('/message', async (req, res) => {
         return;
     }
     let email = null;
+    const phone = '';//req.body.phone;
     let user;
     let token;
     if (!req.headers.authorization) {
-        res.status(401).send("Unauthroized");
-        return;
+        if (!phone) {
+            res.status(401).send("Unauthroized");
+            return;
+        } 
     } else {
         token = req.headers.authorization.replace("Bearer ", '');
         user = await WAUser.findOne({ token });
@@ -79,7 +82,7 @@ router.post('/message', async (req, res) => {
             email = user.email;
         }
     }
-    console.log(`⬅️ "${text}" from ${email}`);
+    console.log(`⬅️ "${text}" from ${email} / ${phone}`);
     if (!messageCallback) {
         console.error('No message callback set');
         return res.sendStatus(500);
@@ -92,9 +95,9 @@ router.post('/message', async (req, res) => {
         user.previous_response_id = undefined;
         await user.save();
     } else {
-        response = await messageCallback({email, text, conversationId});
+        response = await messageCallback({email, phone, text, conversationId});
     }
-    console.log(`➡️ "${response}" to ${email}`);
+    console.log(`➡️ "${response}" to ${email} / ${phone}`);
     res.send(response);
 })
 
