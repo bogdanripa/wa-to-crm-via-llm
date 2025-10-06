@@ -67,7 +67,7 @@ app.post('/signUpUser', async (req, res) => {
 
   await user.save();
 
-  await rewriteThenSendMessage(phone, "Welcome! You are now authenticated.");
+  await rewriteThenSendMessage(user.phone, "Welcome! You are now authenticated.");
 
   res.status(200).json({ phone: user.phone });
 });
