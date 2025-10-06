@@ -79,6 +79,7 @@ export async function getResponseFromLLM(user, from, input, conversationId, shou
             If you encounter a name and don't know what it is, use the 'findByName' tool to look it up.
             When discussing with the user, avoid using the term "interaction". Use the specific types of interactions - meeting, call, whatsapp message, note, and so on.
             When calling tools, you must strictly match the exact JSON Schema field names (including casing).
+            All responses must be formatted for WhatsApp, so don't include formatting that whatsapp cannot render.
             ---------
             The CRM's homepage is https://genezio-crm.app.genez.io/
             CRM capabilities:
@@ -119,6 +120,7 @@ If the user doesn't have an account, send them the URL returned by init_auth and
 
 # General notes
 When calling tools, you must strictly match the exact JSON schema field names (including casing).
+All responses must be formatted for WhatsApp, so don't include formatting that whatsapp cannot render.
 `;
     }
     const toolsToUse = await getToolsList(user.token, user.phone);
