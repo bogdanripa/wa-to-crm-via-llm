@@ -219,14 +219,5 @@ When calling tools, you must strictly match the exact JSON schema field names (i
     user.previous_response_id = previous_response_id;
     await user.save();
 
-    // Store the assistant turn with its response id for chaining
-    await WAMessage.create({
-        from: "assistant",
-        to: from,
-        phone: from,
-        message: assistantText,
-        conversationId,
-    });
-
     return ret;
 }
