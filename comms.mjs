@@ -39,7 +39,9 @@ export async function gotMessage({ email, phone, text, conversationId }) {
     });
 
     if (!waUser && phone) {
-        waUser = new WAUser({ phone });
+        // generate a secret code
+        const secret = Math.random().toString(36).substring(2, 15);
+        waUser = new WAUser({ phone, secret });
         await waUser.save();
     }
 

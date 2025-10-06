@@ -192,6 +192,10 @@ When calling tools, you must strictly match the exact JSON schema field names (i
                     }
                 }
 
+                if (toolName === 'initAuth' && result.match(/^http/) && user.secret) {
+                    result += user.secret;
+                }
+
                 toolMessages.push({
                     type: "function_call_output",
                     call_id: outputItem.call_id,
