@@ -22,7 +22,7 @@ Interact live with the WhatApp bot here: https://wa.me/40750266147
 >
 > Me: Sure. My email address is b***@genezio.com
 >
-> Agent: It looks like that email address doesn’t exist in our system. Please create a new account on our website: genezio-crm.app.genez.io. After you’ve created an account, please return here to complete the authentication. If you need help, I’m here to assist!
+> Agent: It looks like that email address doesn’t exist in our system. Please create a new account on our website: app.mayacrm.ai. After you’ve created an account, please return here to complete the authentication. If you need help, I’m here to assist!
 >
 > Me: Try with b***@genez.io then? Maybe that one works?
 >
