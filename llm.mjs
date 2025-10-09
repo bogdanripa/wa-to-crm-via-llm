@@ -180,6 +180,7 @@ All responses must be formatted for WhatsApp, so don't include formatting that w
                 if (!user.token) args.phone = user.phone;
                 console.log(`Tool call: ${toolName}(${JSON.stringify(args, truncateLongStringsReplacer)})`);
                 let result = await callTool(toolName, args, user.token);
+                result = result.content[0].text || result.content[0].json;
 
                 if (toolName === 'sign_in') {
                     try {
