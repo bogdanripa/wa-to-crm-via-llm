@@ -41,6 +41,11 @@ async function getToolsList(token = null, phone = null) {
   } else {
     console.log("Getting the list of tools.");
     list = (await jsonRpcRequest("tools/list", [], token)).tools;
+    list = list.map(tool => ({
+      ...tool,
+      parameters: tool.inputSchema,
+      inputSchema: undefined
+    }));
     await ToolsList.findOneAndUpdate(
       { authenticated },
       { authenticated, tools: list },
